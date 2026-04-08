@@ -21,6 +21,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.jlds.decorar.ui.viewmodel.VocabularyViewModel
 import com.jlds.decorar.util.FileHelper
@@ -196,7 +198,7 @@ fun CustomInputField(
             Icon(Icons.Default.Search, null, tint = Color.White, modifier = Modifier.size(28.dp))
         },
         singleLine = true,
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Unspecified, autoCorrectEnabled = false, keyboardType = KeyboardType.Password, imeAction = ImeAction.Done,platformImeOptions = null, showKeyboardOnFocus = null,hintLocales = null),
         keyboardActions = KeyboardActions(onDone = { onDone() })
     )
 }

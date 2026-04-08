@@ -38,13 +38,17 @@ class VocabularyViewModel(private val repository: WordRepository) : ViewModel() 
 
         if (isFinalAttempt) {
             if (currentInput.equals(targetWord, ignoreCase = true)) {
-                // ACERTOU:
                 // 1. Marca como revelada
-                words[currentStep].isRevealed = true
+                val correctWord = words[currentStep]
+                correctWord.isRevealed = true
 
-                // 2. Força a UI a atualizar (Trigger manual para o LiveData/State)
-                // Como words é uma List vinda do Room, precisamos "avisar" que ela mudou
-                // Uma forma simples é incrementar o step e limpar o input
+                // 2. REPRODUÇÃO AUTOMÁTICA:
+                // Toca o áudio assim que detecta o acerto
+                if (!correctWord.audioPath.isNullOrEmpty()) {
+                    playAudio(correctWord.audioPath)
+                }
+
+                // 3. Avança o passo e limpa o campo
                 currentStep++
                 typedWord = ""
 
@@ -52,7 +56,7 @@ class VocabularyViewModel(private val repository: WordRepository) : ViewModel() 
                     isSequenceComplete = true
                 }
             } else {
-                android.widget.Toast.makeText(context, "Erro! Voltando ao início.", android.widget.Toast.LENGTH_SHORT).show()
+                android.widget.Toast.makeText(context, "Erro! Recomeçando...", android.widget.Toast.LENGTH_SHORT).show()
                 resetGame()
             }
         }
@@ -83,16 +87,24 @@ class VocabularyViewModel(private val repository: WordRepository) : ViewModel() 
             }
         }
     }
+    private var mediaPlayer: MediaPlayer? = null
+
     fun playAudio(path: String?) {
         if (path.isNullOrEmpty()) return
 
         try {
-            MediaPlayer().apply {
+            // Interrompe áudio anterior se ainda estiver tocando
+            mediaPlayer?.stop()
+            mediaPlayer?.release()
+
+            mediaPlayer = MediaPlayer().apply {
                 setDataSource(path)
                 prepare()
                 start()
-                // Libera a memória quando o áudio terminar
-                setOnCompletionListener { release() }
+                setOnCompletionListener {
+                    it.release()
+                    mediaPlayer = null
+                }
             }
         } catch (e: Exception) {
             e.printStackTrace()
